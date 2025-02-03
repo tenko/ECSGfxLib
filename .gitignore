@@ -1,0 +1,29 @@
+# Folders
+arch/
+arm32t/
+build/
+doc/_static
+doc/_templates
+doc/src
+tmp/
+
+# Generated files
+tmp.lnk
+*.obf
+*.sym
+*.dbg
+*.lst
+*.map
+
+# Libraries
+*.lib
+*.a
+
+# Shared objects
+*.dll
+*.so
+*.so.*
+*.dylib
+
+# Executables
+*.exe
