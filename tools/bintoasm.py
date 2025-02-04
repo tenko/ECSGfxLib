@@ -33,11 +33,12 @@ def main():
         fh.write('0x{:02x}'.format(v))
         col = col + 1
         
-        if col == 8:
-            fh.write('\n    .byte ')
-            col = 1
-        elif i < len(data):
-            fh.write(', ')
+        if i < len(data):
+            if col == 8:
+                fh.write('\n    .byte ')
+                col = 1
+            else:
+                fh.write(', ')
 
         i = i + 1
     
