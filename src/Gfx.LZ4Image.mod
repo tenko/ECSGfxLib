@@ -87,14 +87,13 @@ VAR
 	data : POINTER TO ARRAY OF BYTE;
 	ret : INTEGER;
 BEGIN
-	fh.WriteConstString("LZ4I");
+	fh.WriteString("LZ4I");
 	fh.WriteU16(U16(this.width));
 	fh.WriteU16(U16(this.height));
 	NEW(data, DataLZ4.MaxEncodeSize(this.size));
 	IF data = NIL THEN RETURN FALSE END;
 	ret := DataLZ4.BlockEncodeRaw(SYSTEM.ADR(data[0]), LEN(data^), this.data, this.size);
 	IF ret < 0 THEN RETURN FALSE END;
-	ret := this.size + 1; (* disable compression for now *)
 	IF ret < this.size THEN
 		fh.WriteByte(BYTE(SET(this.type) + CFLAG));
 		fh.WriteU32(U32(ret));
