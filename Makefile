@@ -6,10 +6,13 @@ ifdef MSYSTEM
 	SYS = Win
 	ECS = /c/EigenCompilerSuite/runtime
 	RTS = $(ECS)/std.lib $(ECS)/win64api.obf
+	SDL = win64sdl.obf
 else
 	PRG = 
 	SYS = Lin
-	RTS = 
+	ECS = ~/.local/lib/ecs/runtime
+	RTS = $(ECS)/std.lib
+	SDL = amd64libsdl.obf
 endif
 
 OLS += FrameBuffer Font LZ4Image
@@ -42,7 +45,7 @@ Test$(PRG) : misc/Test.mod build/spleen6x12Font.obf build/OberonLogo.obf gfx.lib
 	@echo compiling $<
 	@mkdir -p build
 	@cd build && cp -f ../misc/Test.mod .
-	@cd build && ecsd Test.mod ../gfx.lib spleen6x12Font.obf OberonLogo.obf $(RTS) ${ECS}/win64sdl.obf
+	@cd build && ecsd Test.mod ../gfx.lib spleen6x12Font.obf OberonLogo.obf $(RTS) ${ECS}/$(SDL)
 	@cp build/$@ .
 	@./$@
 
@@ -50,7 +53,7 @@ Tests$(PRG) : tests/Tests.mod build/spleen6x12Font.obf build/OberonLogo.obf gfx.
 	@echo compiling $<
 	@mkdir -p build
 	@cd build && cp -f ../tests/Tests.mod .
-	@cd build && ecsd tests.mod ../gfx.lib spleen6x12Font.obf OberonLogo.obf $(RTS)
+	@cd build && ecsd Tests.mod ../gfx.lib spleen6x12Font.obf OberonLogo.obf $(RTS)
 	@cp build/$@ .
 	@./$@
 
@@ -58,7 +61,7 @@ Viewer$(PRG) : misc/Viewer.mod gfx.lib
 	@echo compiling $<
 	@mkdir -p build
 	@cd build && cp -f ../misc/Viewer.mod .
-	@cd build && ecsd Viewer.mod ../gfx.lib $(RTS) ${ECS}/win64sdl.obf
+	@cd build && ecsd Viewer.mod ../gfx.lib $(RTS) ${ECS}/$(SDL)
 	@cp build/$@ .
 
 .PHONY: install
