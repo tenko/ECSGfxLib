@@ -18,7 +18,7 @@ MODULE LZ4Image IN Gfx;
 IMPORT SYSTEM;
 
 IN Std IMPORT Type, DataLZ4;
-IN Gfx IMPORT FrameBuffer;
+IN Gfx IMPORT Framebuffer;
 
 CONST
 	CFLAG* = SET({7}); (* Flag for (un)compressed image type *)
@@ -66,7 +66,7 @@ Size, depth must match. Stride of framebuffer must be equal to width.
 This procedure decompress the image directly to the FrameBuffer and
 this puts limit in the FrameBuffer.
 *)
-PROCEDURE (VAR this : Image) ToFrameBuffer*(fb : FrameBuffer.FrameBuffer): BOOLEAN;
+PROCEDURE (VAR this : Image) ToFramebuffer*(VAR fb : Framebuffer.Framebuffer): BOOLEAN;
 VAR
 	size : INTEGER;
 BEGIN
@@ -79,7 +79,7 @@ BEGIN
 		RETURN TRUE;
 	END;
 	RETURN DataLZ4.BlockDecodeRaw(fb.pixels, size, this.data, this.size) = size
-END ToFrameBuffer;
+END ToFramebuffer;
 
 (** Write image to stream. *)
 PROCEDURE (VAR this : Image) Write*(VAR fh : Type.Stream): BOOLEAN;
@@ -180,9 +180,9 @@ Set image data from FrameBuffer.
 The image created is uncompressed.
 Used for debuging purpose.
 *)
-PROCEDURE InitFromFrameBuffer*(VAR image : Image; VAR src : FrameBuffer.FrameBuffer): INTEGER;
+PROCEDURE InitFromFramebuffer*(VAR image : Image; VAR src : Framebuffer.Framebuffer): INTEGER;
 VAR
-	dst : FrameBuffer.FrameBuffer;
+	dst : Framebuffer.Framebuffer;
 	bpp, fmt : INTEGER;
 BEGIN
 	image.width := src.width;
@@ -203,16 +203,16 @@ BEGIN
 	IF image.array = NIL THEN RETURN ERROR_MEMORY END;
 	image.data := SYSTEM.ADR(image.array[0]);
 	
-	IF (src.format = FrameBuffer.MONO_VLSB) OR (src.format = FrameBuffer.MONO_HLSB) THEN
-		fmt := FrameBuffer.MONO_HMSB
+	IF (src.format = Framebuffer.MONO_VLSB) OR (src.format = Framebuffer.MONO_HLSB) THEN
+		fmt := Framebuffer.MONO_HMSB
 	ELSE
 		fmt := src.format
 	END;
 	
-	FrameBuffer.Init(dst, image.data, fmt, image.width, image.height, image.stride);
+	Framebuffer.Init(dst, image.data, fmt, image.width, image.height, image.stride);
 	dst.Blit(src, 0, 0, -1);
 	RETURN 0
-END InitFromFrameBuffer;
+END InitFromFramebuffer;
 
 (** Read image form Stream *)
 PROCEDURE InitFromStream*(VAR image : Image; VAR fh : Type.Stream): INTEGER;

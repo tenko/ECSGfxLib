@@ -5,7 +5,7 @@ MIT license, Copyright (c) 2025,  Runar Tenfjord
 MODULE Test;
 
 IMPORT SYSTEM;
-IN Gfx IMPORT FrameBuffer, LZ4Image, Font;
+IN Gfx IMPORT Framebuffer, LZ4Image, Font;
 IN Std IMPORT OSStream;
 
 CONST
@@ -15,9 +15,9 @@ CONST
 VAR ^ spleen6x12Font ["spleen6x12Font"]: ARRAY 1 OF SYSTEM.BYTE;
 VAR ^ oberonLogo ["OberonLogo"]: ARRAY 1 OF SYSTEM.BYTE;
 
-PROCEDURE Check(VAR fb : FrameBuffer.FrameBufferArray; expected-, diff- : ARRAY OF CHAR): BOOLEAN;
+PROCEDURE Check(VAR fb : Framebuffer.FramebufferArray; expected-, diff- : ARRAY OF CHAR): BOOLEAN;
 VAR
-	imgfb, errfb : FrameBuffer.FrameBufferArray;
+	imgfb, errfb : Framebuffer.FramebufferArray;
 	img : LZ4Image.Image;
 	fh : OSStream.File;
 	x, y, col, c, errors : INTEGER;
@@ -35,12 +35,12 @@ BEGIN
 	IF fh.Open(expected, OSStream.AccessRead) THEN
         IGNORE(LZ4Image.InitFromStream(img, fh));
         fh.Close;
-		IF (fb.format = FrameBuffer.MONO_VLSB) OR (fb.format = FrameBuffer.MONO_HLSB) THEN
-			FrameBuffer.InitArray(imgfb, FrameBuffer.MONO_HMSB, img.width, img.height)
+		IF (fb.format = Framebuffer.MONO_VLSB) OR (fb.format = Framebuffer.MONO_HLSB) THEN
+			Framebuffer.InitArray(imgfb, Framebuffer.MONO_HMSB, img.width, img.height)
 		ELSE
-			FrameBuffer.InitArray(imgfb, fb.format, img.width, img.height)
+			Framebuffer.InitArray(imgfb, fb.format, img.width, img.height)
 		END;
-		IGNORE(img.ToFrameBuffer(imgfb));
+		IGNORE(img.ToFramebuffer(imgfb));
   	ELSE
   		Error("failed to read image");
   		RETURN FALSE;
@@ -50,7 +50,7 @@ BEGIN
 	IF img.height # fb.height THEN Error("height does not match"); RETURN FALSE END;
 	IF img.BitDepth() # fb.BitDepth() THEN Error("bit depth does not match"); RETURN FALSE END;
 
-	FrameBuffer.InitArray(errfb, FrameBuffer.RGB888, img.width, img.height);
+	Framebuffer.InitArray(errfb, Framebuffer.RGB888, img.width, img.height);
 	img.Dispose();
 	
 	ret := TRUE;
@@ -64,27 +64,27 @@ BEGIN
 				col := 0FF00FFH;
 			ELSE
 				CASE fb.format OF
-					FrameBuffer.MONO_VLSB, FrameBuffer.MONO_HLSB, FrameBuffer.MONO_HMSB :
+					Framebuffer.MONO_VLSB, Framebuffer.MONO_HLSB, Framebuffer.MONO_HMSB :
 						r := col * 255;
 						g := col * 255;
 						b := col * 255;
-			        | FrameBuffer.RGB565 :
+			        | Framebuffer.RGB565 :
 			        	r := (SYSTEM.LSH(col, -11) * 255) DIV 31;
 						g := (INTEGER(SET(SYSTEM.LSH(col, -5)) * SET(03FH)) * 255) DIV 63;
 						b := (INTEGER(SET(col) * SET(01FH)) * 255) DIV 31;
-					| FrameBuffer.RGB888 :
+					| Framebuffer.RGB888 :
 						r := SYSTEM.LSH(col, -16) MOD 256;
 						g := SYSTEM.LSH(col, -8) MOD 256;				
 						b := col MOD 256;
-			        | FrameBuffer.GS2_HMSB :
+			        | Framebuffer.GS2_HMSB :
 						r := col * 85;
 						g := col * 85;
 						b := col * 85;
-			   		| FrameBuffer.GS4_HMSB :
+			   		| Framebuffer.GS4_HMSB :
 						r := col * 17;
 						g := col * 17;
 						b := col * 17;
-			  		| FrameBuffer.GS8 :
+			  		| Framebuffer.GS8 :
 						r := col;
 						g := col;
 						b := col;
@@ -100,7 +100,7 @@ BEGIN
 		OSStream.StdOut.WriteString(diff); OSStream.StdOut.WriteChar("'");
 		OSStream.StdOut.WriteNL;
 		IF fh.Open(diff, OSStream.AccessWrite + OSStream.ModeNew) THEN
-			IGNORE(LZ4Image.InitFromFrameBuffer(img, errfb));
+			IGNORE(LZ4Image.InitFromFramebuffer(img, errfb));
 			IGNORE(img.Write(fh));
 			fh.Close();
 			img.Dispose();
@@ -119,9 +119,9 @@ BEGIN
 	RETURN ret
 END Check;
 
-PROCEDURE Draw(VAR fb : FrameBuffer.FrameBuffer);
+PROCEDURE Draw(VAR fb : Framebuffer.Framebuffer);
 VAR
-	fba : FrameBuffer.FrameBufferArray;
+	fba : Framebuffer.FramebufferArray;
 	fnt : Font.Font;
 	img : LZ4Image.Image;
 	dx, dy : ARRAY 3 OF INTEGER;
@@ -130,37 +130,37 @@ VAR
 	logo : INTEGER;
 BEGIN
 	CASE fb.format OF
-		FrameBuffer.MONO_VLSB, FrameBuffer.MONO_HLSB, FrameBuffer.MONO_HMSB :
+		Framebuffer.MONO_VLSB, Framebuffer.MONO_HLSB, Framebuffer.MONO_HMSB :
 			bg := 0;			(* Black *)
 			fg := 1;			(* White *)
 			line := 0;			(* Black *)
 			txt := 1;			(* White *)
 			logo := 1;			(* White *)
-		| FrameBuffer.RGB565 :
+		| Framebuffer.RGB565 :
 			bg := 0047FH;		(* Blue *)
 			fg := 08410H;		(* Grey *)
 			line := 0FD20H;		(* Orange *)
 			txt := 0FFFFH;		(* White *)
 			logo := 0FFFFH;		(* White *)
-		| FrameBuffer.RGB888 :
+		| Framebuffer.RGB888 :
 			bg := 08CFFH;		(* Blue *)
 			fg := 808080;		(* Grey *)
 			line := 0FFA500H;	(* Orange *)
 			txt := 0FFFFFFH;	(* White *)
 			logo := 0FFFFFFH;	(* White *)
-		| FrameBuffer.GS2_HMSB :
+		| Framebuffer.GS2_HMSB :
 			bg := 00H;			(* Black *)
 			fg := 02H;			(* Grey 80% *)
 			line := 01H;		(* Grey 50% *)
 			txt := 03H;			(* White *)
 			logo := 03H;			(* White *)
-		| FrameBuffer.GS4_HMSB :
+		| Framebuffer.GS4_HMSB :
 			bg := 03H;			(* Grey 20% *)
 			fg := 0CH;			(* Grey 80% *)
 			line := 07H;		(* Grey 50% *)
 			txt := 0FH;			(* White *)
 			logo := 0FH;			(* White *)
-		| FrameBuffer.GS8 :
+		| Framebuffer.GS8 :
 			bg := 033H;			(* Grey 20% *)
 			fg := 0CCH;			(* Grey 80% *)
 			line := 07FH;		(* Grey 50% *)
@@ -171,8 +171,8 @@ BEGIN
 
 	palette[0] := bg; palette[1] := logo;
 	IGNORE(LZ4Image.InitRaw(img, SYSTEM.ADR(oberonLogo[0])));
-	FrameBuffer.InitArray(fba, FrameBuffer.MONO_HMSB, img.width, img.height);
-    IGNORE(img.ToFrameBuffer(fba));
+	Framebuffer.InitArray(fba, Framebuffer.MONO_HMSB, img.width, img.height);
+    IGNORE(img.ToFramebuffer(fba));
 
 	fb.Fill(bg);
 	fb.FilledRect(35, 20, 150, 80, fg);
@@ -194,21 +194,21 @@ END Draw;
 
 PROCEDURE TestDraw(fmt : INTEGER; exp-, diff- : ARRAY OF CHAR);
 VAR
-	fb : FrameBuffer.FrameBufferArray;
+	fb : Framebuffer.FramebufferArray;
 BEGIN
-	FrameBuffer.InitArray(fb, fmt, WIDTH, HEIGHT);
+	Framebuffer.InitArray(fb, fmt, WIDTH, HEIGHT);
 	Draw(fb);
 	IGNORE(Check(fb, exp, diff));
 	fb.Dispose();
 END TestDraw;
 
 BEGIN
-	TestDraw(FrameBuffer.GS2_HMSB, "tests/gs2_expected.lz4i", "build/gs2_diff.lz4i");
-	TestDraw(FrameBuffer.GS4_HMSB, "tests/gs4_expected.lz4i", "build/gs4_diff.lz4i");
-	TestDraw(FrameBuffer.GS8, "tests/gs8_expected.lz4i", "build/gs8_diff.lz4i");
-	TestDraw(FrameBuffer.RGB565, "tests/rgb565_expected.lz4i", "build/rgb565_diff.lz4i");
-	TestDraw(FrameBuffer.RGB888, "tests/rgb888_expected.lz4i", "build/rgb888_diff.lz4i");
-	TestDraw(FrameBuffer.MONO_VLSB, "tests/mono_expected.lz4i", "build/mono_vlsb_diff.lz4i");
-	TestDraw(FrameBuffer.MONO_HLSB, "tests/mono_expected.lz4i", "build/mono_hlsb_diff.lz4i");
-	TestDraw(FrameBuffer.MONO_HMSB, "tests/mono_expected.lz4i", "build/mono_hmsb_diff.lz4i");
+	TestDraw(Framebuffer.GS2_HMSB, "tests/gs2_expected.lz4i", "build/gs2_diff.lz4i");
+	TestDraw(Framebuffer.GS4_HMSB, "tests/gs4_expected.lz4i", "build/gs4_diff.lz4i");
+	TestDraw(Framebuffer.GS8, "tests/gs8_expected.lz4i", "build/gs8_diff.lz4i");
+	TestDraw(Framebuffer.RGB565, "tests/rgb565_expected.lz4i", "build/rgb565_diff.lz4i");
+	TestDraw(Framebuffer.RGB888, "tests/rgb888_expected.lz4i", "build/rgb888_diff.lz4i");
+	TestDraw(Framebuffer.MONO_VLSB, "tests/mono_expected.lz4i", "build/mono_vlsb_diff.lz4i");
+	TestDraw(Framebuffer.MONO_HLSB, "tests/mono_expected.lz4i", "build/mono_hlsb_diff.lz4i");
+	TestDraw(Framebuffer.MONO_HMSB, "tests/mono_expected.lz4i", "build/mono_hmsb_diff.lz4i");
 END Test.

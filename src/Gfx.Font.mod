@@ -10,7 +10,7 @@ MODULE Font IN Gfx;
 IMPORT SYSTEM;
 
 IN Std IMPORT Type;
-IN Gfx IMPORT FrameBuffer;
+IN Gfx IMPORT Canvas;
 
 CONST
 	ERROR_IN_DATA = -1;
@@ -29,7 +29,7 @@ TYPE
 	END;
 
 (** Draw char at (x0, y0) and return advance distance in x *)
-PROCEDURE (VAR this : Font) Char*(VAR fb : FrameBuffer.FrameBuffer; ch : CHAR; x0, y0, color: INTEGER): INTEGER;
+PROCEDURE (VAR this : Font) Char*(VAR cv : Canvas.Canvas; ch : CHAR; x0, y0, color: INTEGER): INTEGER;
 VAR
 	adr : ADDRESS;
 	c, offset, width, rows : INTEGER;
@@ -78,14 +78,14 @@ BEGIN
 	FOR row := 0 TO rows - 1 DO
 		x := x0; col := 0; i := 0;
 		LOOP
-			IF (y0 < 0) OR (y0 >= fb.height) THEN EXIT END;
+			IF (y0 < 0) OR (y0 >= cv.height) THEN EXIT END;
 			IF (i > pitch) OR (col >= width) THEN EXIT END;
 			SYSTEM.GET(adr + i, s);
 			j := 7;
 			LOOP
 				IF (j < 0) OR (col >= width) THEN EXIT END;
-				IF (j IN s) & (0 <= x) & (x < fb.width) THEN
-					fb.SetPixelProc(fb.pixels, fb.stride, x0 + col, y0, color);
+				IF (j IN s) & (0 <= x) & (x < cv.width) THEN
+					cv.SetPixel(x0 + col, y0, color);
 				END;
 				INC(x);
 				INC(col);
@@ -142,7 +142,7 @@ BEGIN
 END StringSize;
 
 (** Draw string at (x0, y0) *)
-PROCEDURE (VAR this : Font) String*(VAR fb : FrameBuffer.FrameBuffer; s- : ARRAY OF CHAR; x0, y0, color: INTEGER);
+PROCEDURE (VAR this : Font) String*(VAR cv : Canvas.Canvas; s- : ARRAY OF CHAR; x0, y0, color: INTEGER);
 VAR
 	ch : CHAR;
 	i : LENGTH;
@@ -150,7 +150,7 @@ BEGIN
 	FOR i := 0 TO LEN(s) - 1 DO
 		ch := s[i];
 		IF ch = 00X THEN RETURN END;
-		x0 := x0 + this.Char(fb, ch, x0, y0, color);
+		x0 := x0 + this.Char(cv, ch, x0, y0, color);
 	END;
 END String;
 

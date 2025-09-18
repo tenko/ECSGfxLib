@@ -4,26 +4,29 @@ MAKEFLAGS += --no-builtin-rules --no-builtin-variables
 ifdef MSYSTEM
 	PRG = .exe
 	SYS = Win
+	DESTDIR = /c/EigenCompilerSuite/
 	ECS = /c/EigenCompilerSuite/runtime
 	RTS = $(ECS)/std.lib $(ECS)/win64api.obf
 	SDL = win64sdl.obf
 else
 	PRG = 
 	SYS = Lin
+	DESTDIR = ~/.local/lib/ecs/
 	ECS = ~/.local/lib/ecs/runtime
 	RTS = $(ECS)/std.lib
 	SDL = amd64libsdl.obf
 endif
 
-OLS += FrameBuffer Font LZ4Image
+OLS += Canvas Framebuffer Font LZ4Image
 MOD = $(addprefix src/, $(addprefix Gfx., $(addsuffix .mod, $(OLS))))
 OBF = $(addprefix build/, $(addprefix Gfx., $(addsuffix .obf, $(OLS))))
 
 .PHONY: all
 all : gfx.lib
 
-build/Gfx.Font.obf : src/Gfx.FrameBuffer.mod
-build/Gfx.LZ4Image.obf : src/Gfx.FrameBuffer.mod
+build/Gfx.Framebuffer.obf : src/Gfx.Canvas.mod
+build/Gfx.Font.obf : src/Gfx.Framebuffer.mod
+build/Gfx.LZ4Image.obf : src/Gfx.Framebuffer.mod
 
 build/%.obf: src/%.mod
 	@echo compiling $< 
@@ -65,10 +68,10 @@ Viewer$(PRG) : misc/Viewer.mod gfx.lib
 	@cp build/$@ .
 
 .PHONY: install
-install: std.lib
+install: gfx.lib
 	@echo Install
-	@cp -f gfx.lib /c/EigenCompilerSuite/runtime/
-	@cp -f build/std.*.sym /c/EigenCompilerSuite/libraries/oberon/
+	@cp -f gfx.lib $(DESTDIR)runtime/
+	@cp -f build/gfx.*.sym $(DESTDIR)libraries/oberon/
 
 .PHONY: clean
 clean:
