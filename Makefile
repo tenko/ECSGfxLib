@@ -1,20 +1,19 @@
 .SUFFIXES:
 MAKEFLAGS += --no-builtin-rules --no-builtin-variables
 
+# Installation prefix
+PREFIX = /usr/local
+
 ifdef MSYSTEM
 	PRG = .exe
 	SYS = Win
-	DESTDIR = /c/EigenCompilerSuite/
-	ECS = /c/EigenCompilerSuite/runtime
-	RTS = $(ECS)/std.lib $(ECS)/win64api.obf
-	SDL = win64sdl.obf
+	RTS = -r std.lib -r win64api.obf
+	SDL = -r win64sdl.obf
 else
 	PRG = 
 	SYS = Lin
-	DESTDIR = ~/.local/lib/ecs/
-	ECS = ~/.local/lib/ecs/runtime
-	RTS = $(ECS)/std.lib
-	SDL = amd64libsdl.obf
+	RTS = -r std.lib
+	SDL = -r amd64libsdl.obf
 endif
 
 OLS += Canvas Framebuffer Font LZ4Image
@@ -48,7 +47,7 @@ Test$(PRG) : misc/Test.mod build/spleen6x12Font.obf build/OberonLogo.obf gfx.lib
 	@echo compiling $<
 	@mkdir -p build
 	@cd build && cp -f ../misc/Test.mod .
-	@cd build && ecsd Test.mod ../gfx.lib spleen6x12Font.obf OberonLogo.obf $(RTS) ${ECS}/$(SDL)
+	@cd build && ecsd $(RTS) $(SDL) Test.mod ../gfx.lib spleen6x12Font.obf OberonLogo.obf
 	@cp build/$@ .
 	@./$@
 
@@ -56,7 +55,7 @@ Tests$(PRG) : tests/Tests.mod build/spleen6x12Font.obf build/OberonLogo.obf gfx.
 	@echo compiling $<
 	@mkdir -p build
 	@cd build && cp -f ../tests/Tests.mod .
-	@cd build && ecsd Tests.mod ../gfx.lib spleen6x12Font.obf OberonLogo.obf $(RTS)
+	@cd build && ecsd $(RTS) Tests.mod ../gfx.lib spleen6x12Font.obf OberonLogo.obf
 	@cp build/$@ .
 	@./$@
 
@@ -64,14 +63,14 @@ Viewer$(PRG) : misc/Viewer.mod gfx.lib
 	@echo compiling $<
 	@mkdir -p build
 	@cd build && cp -f ../misc/Viewer.mod .
-	@cd build && ecsd Viewer.mod ../gfx.lib $(RTS) ${ECS}/$(SDL)
+	@cd build && ecsd  $(RTS) $(SDL) Viewer.mod ../gfx.lib
 	@cp build/$@ .
 
 .PHONY: install
 install: gfx.lib
 	@echo Install
-	@cp -f gfx.lib $(DESTDIR)runtime/
-	@cp -f build/gfx.*.sym $(DESTDIR)libraries/oberon/
+	@cp -f gfx.lib $(PREFIX)/lib/ecs/runtime/
+	@cp -f build/gfx.*.sym $(PREFIX)/lib/ecs/libraries/oberon/
 
 .PHONY: clean
 clean:

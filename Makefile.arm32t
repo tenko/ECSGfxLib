@@ -5,13 +5,8 @@ OB := ecsd
 AS := armt32asm
 DAS := armt32dism
 
-ifdef MSYSTEM
-	DESTDIR = /c/EigenCompilerSuite/
-	ECS = /c/EigenCompilerSuite/runtime
-else
-	DESTDIR = ~/.local/lib/ecs/
-	ECS = ~/.local/lib/ecs/runtime
-endif
+# Installation prefix
+PREFIX = /usr/local
 
 CPU = armt32
 
@@ -53,8 +48,8 @@ gfx$(CPU).lib : $(OBF)
 .PHONY: install
 install: gfx$(CPU).lib
 	@echo Install
-	@cp -f gfx$(CPU).lib $(DESTDIR)runtime/
-	@cp -f build/gfx.*.sym $(DESTDIR)libraries/oberon/
+	@cp -f gfx$(CPU).lib $(PREFIX)/lib/ecs/runtime/
+	@cp -f build/gfx.*.sym $(PREFIX)/lib/ecs/libraries/oberon/
 
 .PHONY: clean
 clean:
